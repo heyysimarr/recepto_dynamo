@@ -1,18 +1,30 @@
 # NLP Recepto - Team Dynamo Setup
 
 ## Installation Instructions
+1. Setup the .env file with:
+```bash
+API_KEY=
+DATASET_ID=
+BASE=
 
-1. Place the testing file at:
+PROXY=
+
+AZURE_ENDPOINT=
+AZURE_API_KEY=
+
+```
+
+2. Place the testing file at:
    ```
    dataset/test.json
    ```
 
-2. Install dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Run the application:
+4. Run the application:
    ```bash
    make run
    ```
