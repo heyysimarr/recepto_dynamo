@@ -1,0 +1,20 @@
+[
+  {
+    "persona": "DamionW",
+    "persona_query": "damionw principal security engineer",
+    "ranked_profiles": [
+      {
+        "index": 0,
+        "profile_url": "https://www.linkedin.com/in/damianmcloughlin",
+        "query": "damian mcloughlin raytheon mba ms bs",
+        "unigram_overlap": 0,
+        "bigram_overlap": 0,
+        "trigram_overlap": 0,
+        "total_overlap": 0,
+        "name_similarity": 0.5,
+        "sequence_matcher_score": 0.30985915492957744,
+        "score": 1.0
+      }
+    ]
+  }
+]

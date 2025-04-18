@@ -39,11 +39,12 @@ username_input = driver.find_element(By.ID, "username")
 password_input = driver.find_element(By.ID, "password")
 
 username_input.send_keys(LINKEDIN_USERNAME)
-time.sleep(10)  # Brief pause before password
+time.sleep(random.uniform(0,30))  # Brief pause before password
 password_input.send_keys(LINKEDIN_PASSWORD)
 password_input.send_keys(Keys.RETURN)
+time.sleep(random.uniform(0,30))
 
-input_file = "Type1_linkedin_links.json"  # Replace with your actual file name
+input_file = "output/google.json"  # Replace with your actual file name
 with open(input_file, "r", encoding="utf-8") as f:
     file = json.load(f)
 print("file loaded")
@@ -196,35 +197,50 @@ for person in file:
 
             # 5. Education extraction
         education = []
+
         try:
-            # Grab the education section by using the anchor id
-            education_elements = driver.find_elements(
-                By.XPATH,
-                "//section[div[@id='education']]//li[contains(@class, 'artdeco-list__item')]"
-            )
-            print(f"[DEBUG] Found {len(education_elements)} education entries.")
-            for idx, edu in enumerate(education_elements):
-                try:
-                    institution_el = edu.find_element(By.CSS_SELECTOR, "div.hoverable-link-text.t-bold span[aria-hidden='true']")
-                    institution = institution_el.text.strip()
-                except Exception as e:
-                    print(f"[DEBUG] Education {idx}: Could not extract institution: {e}")
-                    institution = None
+            # Step 1: Store current URL
+            original_url = driver.current_url
 
-                try:
-                    degree_el = edu.find_element(By.CSS_SELECTOR, "span.t-14.t-normal span[aria-hidden='true']")
-                    degree = degree_el.text.strip()
-                except Exception as e:
-                    print(f"[DEBUG] Education {idx}: Could not extract degree: {e}")
-                    degree = None
+            # Step 2: Go to the /details/education/ page
+            if "linkedin.com/in/" in original_url:
+                education_url = original_url.split("?")[0].replace("in.linkedin.com", "www.linkedin.com") + "/details/education/"
+                driver.get(education_url)
+                time.sleep(2)  # Wait for page to load — increase if needed
 
-                # Only add if there's meaningful data
-                if institution or degree:
-                    edu_data = {"institution": institution, "degree": degree}
-                    print(f"[DEBUG] Education {idx}: {edu_data}")
-                    education.append(edu_data)
-                else:
-                    print(f"[DEBUG] Education {idx}: Skipped due to empty fields.")
+                # Step 3: Extract education elements
+                education_elements = driver.find_elements(
+                    By.XPATH,
+                    "//section[contains(@class, 'artdeco-card')]//li[contains(@class, 'artdeco-list__item')]"
+                )
+                print(f"[DEBUG] Found {len(education_elements)} education entries.")
+
+                for idx, edu in enumerate(education_elements):
+                    try:
+                        institution_el = edu.find_element(By.CSS_SELECTOR, "span.t-bold span[aria-hidden='true']")
+                        institution = institution_el.text.strip()
+                    except Exception as e:
+                        print(f"[DEBUG] Education {idx}: Could not extract institution: {e}")
+                        institution = None
+
+                    try:
+                        degree_el = edu.find_element(By.CSS_SELECTOR, "span.t-normal.t-14 span[aria-hidden='true']")
+                        degree = degree_el.text.strip()
+                    except Exception as e:
+                        print(f"[DEBUG] Education {idx}: Could not extract degree: {e}")
+                        degree = None
+
+                    if institution or degree:
+                        edu_data = {"institution": institution, "degree": degree}
+                        print(f"[DEBUG] Education {idx}: {edu_data}")
+                        education.append(edu_data)
+                    else:
+                        print(f"[DEBUG] Education {idx}: Skipped due to empty fields.")
+
+            # Step 4: Return to original page
+            driver.get(original_url)
+            time.sleep(1)
+
         except Exception as e:
             print(f"[DEBUG] Error extracting Education: {e}")
 
@@ -234,7 +250,7 @@ for person in file:
             print(f"Error visiting {profile_url}: {e}")
     all_profiles_data.append(data)
 
-output_file = "linkedin_profiles_all.json"
+output_file = "linkedin_profiles_all_google.json"
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(all_profiles_data, f, indent=2)
 print(f"[DEBUG] All profiles data written to {output_file}")

@@ -1,25 +1,30 @@
-#!/usr/bin/env python3
 import json
 import sys
 import time
 import random
+import os
+import urllib.parse
+import re
+from collections import OrderedDict
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from collections import OrderedDict
-
+from selenium.webdriver.chrome.service import Service
 import requests
-import re
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+import ollama
+from dotenv import load_dotenv
+
+
+def random_sleep(min_seconds, max_seconds):
+    time.sleep(random.uniform(min_seconds, max_seconds))
+    
 
 # Access AZURE_ENDPOINT and AZURE_API_KEY
 AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
 AZURE_API_KEY = os.getenv("AZURE_API_KEY")
+
 
 def generate_queries(person):
     prompt = f"""
@@ -74,109 +79,90 @@ Only return the 5 queries, each on a new line, without numbering or extra explan
 
 def init_driver():
     options = Options()
-    #options.add_argument("--headless=new")  # Run headless
-    #options.add_argument("--disable-gpu")
+    # options.add_argument("--headless=new")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--log-level=3")
-    driver = webdriver.Chrome(options=options)
-    return driver
+    service = Service(log_path=os.devnull)
+    return webdriver.Chrome(service=service, options=options)
 
+def safe_search_google(driver, query, max_results=2, captcha_prompt=False):
+    # Strip any prefix then restrict to LinkedIn profiles
+    #query = query[3:]
+    full_query = f"site:linkedin.com/in/ {query}"
+    encoded = urllib.parse.quote_plus(full_query)
+    url = f"https://www.google.com/search?q={encoded}"
+    print(f"[DEBUG] Final Google search URL: {url}")
+    driver.get(url)
 
-def safe_search_duckduckgo(driver, query, max_results=15):
-    search_url = "https://duckduckgo.com/"
-    driver.get(search_url)
-    time.sleep(random.uniform(4, 15))
+    if captcha_prompt:
+        input(">> Solve CAPTCHA if prompted, then press Enter to continue...")
 
-    # Perform search
-    search_box = driver.find_element(By.NAME, "q")
-    search_box.clear()
-    search_box.send_keys(query + Keys.ENTER)
-    time.sleep(3)
+    time.sleep(random.uniform(4, 8))
 
-    urls = set()
+    results = set()
     page = 1
+    while len(results) < max_results:
+        print(f"[DEBUG] Page {page}, found {len(results)} so far.")
+        anchors = driver.find_elements(By.CSS_SELECTOR, "a.zReHs")
+        for a in anchors:
+            href = a.get_attribute("href")
+            if href and "linkedin.com/in/" in href:
+                results.add(href)
+                if len(results) >= max_results:
+                    break
 
-    while len(urls) < max_results and page <= 10:
-        print(f"🟦 Page {page} — results so far: {len(urls)}")
-
-        links = driver.find_elements(By.CSS_SELECTOR, 'a[data-testid="result-title-a"]')
-        for link in links:
-            url = link.get_attribute("href")
-            print(url)
-            if url and url.startswith("https://www.linkedin.com/in/"):
-                urls.add(url)
-            if len(urls) >= max_results:
-                break
-        time.sleep(5)
-        # Try to go to next page
-        try:
-            more_btn = driver.find_element(By.ID, "more-results")
-            driver.execute_script("arguments[0].click();", more_btn)
-            page += 1
-            time.sleep(random.uniform(3, 5))
-        except Exception:
-            print("No 'More results' button found or clickable.")
+        if len(results) >= max_results:
             break
 
-    return list(urls)
+        # paginate
+        try:
+            nxt = driver.find_element(By.CSS_SELECTOR, f'a.fl[aria-label="Page {page+1}"]')
+            nxt.click()
+            page += 1
+            time.sleep(random.uniform(4, 8))
+        except:
+            break
+
+    return list(results)
 
 def main():
     if len(sys.argv) != 3:
         print("Usage: python duckduckbot.py <input_json> <output_json>")
         sys.exit(1)
 
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-
-    with open(input_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    input_path, output_path = sys.argv[1], sys.argv[2]
+    with open(input_path, "r", encoding="utf-8") as f:
+        people = json.load(f)
 
     driver = init_driver()
-    I_dont_want_queries_regen = 1
     final_output = []
 
-    for person in data:
-        if I_dont_want_queries_regen:
-            if "query" in person and isinstance(person["query"], list) and person["query"]:
-                queries = person["query"]
-            else:
-                try:
-                    queries = generate_queries(person)
-                    person["query"] = queries
-                except Exception as e:
-                    print(f"Skipping record: {e}")
-                    continue
-        else:
+    for j, person in enumerate (people):
+        # 1) generate or reuse raw queries (no numbering)
+        raw_q = generate_queries(person)
+        person["query"] = raw_q
+
+        # 2) aggregate all search results into one set
+        all_links = set()
+        for idx, q in enumerate(raw_q):
+            print(f"Searching with query #{idx+1}: {q}")
             try:
-                queries = generate_queries(person)
-                person["query"] = queries
+                links = safe_search_google(driver, q, max_results=10, captcha_prompt=(idx==0 and j==0))
+                all_links.update(links)
             except Exception as e:
-                print(f"Skipping record: {e}")
-                continue
+                print(f"  Search failed on #{idx+1}: {e}")
+            random_sleep(3, 6)
 
-        all_results = set()
-        for query in queries:
-            print(f"Searching: {query}")
-            try:
-                search_results = safe_search_duckduckgo(driver, query)
-                all_results.update(search_results)
-            except Exception as e:
-                print(f"Search failed for {person.get('name', 'unknown')}: {e}")
-            time.sleep(random.uniform(3, 6))
-
-        person["search_results"] = list(all_results)
-
-        # Append result to the output file as JSONL
+        person["search_results"] = list(all_links)
         final_output.append(person)
-
-
-        time.sleep(random.uniform(3, 6))  # Sleep between requests
+        random_sleep(3, 6)
 
     driver.quit()
-    
+
     # ensure key order and pretty‑print once
     key_order = [
         "name", "image", "intro", "timezone",
+        "human",
         "company_industry", "company_size", "social_profile",
         "query", "search_results"
     ]
@@ -187,12 +173,10 @@ def main():
             od[k] = p.get(k, None)
         ordered_list.append(od)
 
-    with open(output_file, "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(ordered_list, f, ensure_ascii=False, indent=4)
 
-    print(f"[INFO] Final JSON written to {output_file}")
-
-
+    print(f"[INFO] Final JSON written to {output_path}")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Damian McLoughlin",
+    "city": "Denver Metropolitan Area",
+    "country_code": "US",
+    "location": null,
+    "image": "https://media.licdn.com/dms/image/v2/C4D03AQFLjjoalPT7cQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1516502687878?e=2147483647&v=beta&t=yxZjRuhfcEBUt46APmYsaplpfM-6K_4ib5tuEJpZob0",
+    "banner_image": "https://media.licdn.com/dms/image/v2/C4D16AQHbCjJE8FffGA/profile-displaybackgroundimage-shrink_200_800/profile-displaybackgroundimage-shrink_200_800/0/1516502689120?e=2147483647&v=beta&t=CmNAl9Jp-kKDrJIWF6lPeDLqq3-qzDTPEg4qn8Mkh10",
+    "default_avatar": false,
+    "education": [
+      {
+        "title": "Colorado Technical University",
+        "degree": "MBA",
+        "field": "Project Management",
+        "url": "https://www.linkedin.com/school/colorado-technical-university/?trk=public_profile_school_profile-section-card_image-click",
+        "start_year": "2007",
+        "end_year": "2009",
+        "description": "Graduated, March 2009.",
+        "description_html": "Graduated, March 2009. <!---->",
+        "institute_logo_url": "https://media.licdn.com/dms/image/v2/C510BAQFmIfDn2MA1FQ/company-logo_100_100/company-logo_100_100/0/1631308762545?e=2147483647&v=beta&t=XG_2t3f7MRFiUQ400iijp5BEU22gi0Dxc3r7b4cZs6Q"
+      },
+      {
+        "title": "Colorado Technical University",
+        "degree": "MS",
+        "field": "Computer Science, Information Systems Security",
+        "url": "https://www.linkedin.com/school/colorado-technical-university/?trk=public_profile_school_profile-section-card_image-click",
+        "start_year": "2004",
+        "end_year": "2005",
+        "description": null,
+        "description_html": null,
+        "institute_logo_url": "https://media.licdn.com/dms/image/v2/C510BAQFmIfDn2MA1FQ/company-logo_100_100/company-logo_100_100/0/1631308762545?e=2147483647&v=beta&t=XG_2t3f7MRFiUQ400iijp5BEU22gi0Dxc3r7b4cZs6Q"
+      },
+      {
+        "title": "Southern Polytechnic State University",
+        "degree": "BS",
+        "field": "Electronics/Telecommunications Engineering",
+        "url": "https://www.linkedin.com/school/southern-polytechnic-state-university/?trk=public_profile_school_profile-section-card_image-click",
+        "start_year": "2000",
+        "end_year": "2003",
+        "description": "Activities and Societies: Tau Alpha Pi National Honor Society, IEEE Student Chapter President",
+        "description_html": "Activities and Societies: Tau Alpha Pi National Honor Society, IEEE Student Chapter President",
+        "institute_logo_url": "https://media.licdn.com/dms/image/v2/C4E0BAQEcK6CvzhBkgA/company-logo_100_100/company-logo_100_100/0/1631300455099?e=2147483647&v=beta&t=axhovjOFCfE8VDiR3oSmqj38a9JIX9xem3XXQD5K03I"
+      }
+    ],
+    "experience": [
+      {
+        "title": "Principal Cyber Engineer",
+        "location": "Aurora, Colorado",
+        "description_html": null,
+        "start_date": "Jun 2017",
+        "end_date": "Present",
+        "company": "Raytheon",
+        "company_id": "raytheon",
+        "url": "https://www.linkedin.com/company/raytheon",
+        "company_logo_url": "https://media.licdn.com/dms/image/v2/D560BAQEJrjIh_xsiKg/company-logo_100_100/company-logo_100_100/0/1687168982390/raytheon_logo?e=2147483647&v=beta&t=oLiLB9i8PHsWpbYi5rTOAjoUkcH2xMXKRJeIdIggheI"
+      }
+    ],
+    "organizations": [
+      {
+        "title": "IEEE",
+        "membership_type": "-",
+        "start_date": "Jan 2000",
+        "end_date": "Present",
+        "membership_number": null
+      }
+    ],
+    "index": 0,
+    "profile_url": "https://www.linkedin.com/in/damianmcloughlin",
+    "original_name": "DamionW",
+    "human": 0,
+    "drive_link": "https://drive.google.com/file/d/1EGZ9-pwlPSg3VctQ9zeDCYw0oA3xYGR7/view?usp=drive_link",
+    "image_similarity": 0
+  }
+]
