@@ -1,0 +1,9 @@
+requests
+python-dotenv
+selenium
+webdriver-manager
+sentence-transformers
+scikit-learn
+nltk
+opencv-python
+numpy
