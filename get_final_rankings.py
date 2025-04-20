@@ -35,22 +35,27 @@ def extract_query_from_persona(entity: Dict) -> str:
     
     full_query = " ".join([name, intro, company])
     return clean_text(full_query)
+from typing import Dict, Any
 
-def extract_query_from_profile(profile: Dict) -> str:
+def extract_query_from_profile(profile: Dict[str, Any]) -> str:
     """Extracts and cleans query from output profile"""
     parts = [
-        profile.get("name", ""),
-        profile.get("one_liner_about", ""),
-        profile.get("full_about", ""),
+        profile.get("name") or "",
+        profile.get("one_liner_about") or "",
+        profile.get("full_about") or "",
     ]
 
-    for exp in profile.get("experience", []):
-        parts.append(exp.get("role", ""))
-        parts.append(exp.get("company", ""))
+    print(profile.get("name"))
 
-    for edu in profile.get("education", []):
-        parts.append(edu.get("institution", ""))
-        parts.append(edu.get("degree", ""))
+    for exp in profile.get("experience") or []:
+        if isinstance(exp, dict):
+            parts.append(exp.get("role") or "")
+            parts.append(exp.get("company") or "")
+
+    for edu in profile.get("education") or []:
+        if isinstance(edu, dict):
+            parts.append(edu.get("institution") or "")
+            parts.append(edu.get("degree") or "")
 
     return clean_text(" ".join(filter(None, parts)))
 
@@ -85,6 +90,14 @@ def calculate_unigram_scores(persona_query: str, profiles: List[Dict], persona_n
         tri_overlap = len(persona_trigrams & profile_trigrams)
 
         total_overlap = uni_overlap + bi_overlap + tri_overlap
+        # Get image similarity from profile
+        image_similarity = profile.get("image_similarity", 0)
+        
+        # Apply boosts based on image similarity
+        if image_similarity > 0.9:
+            total_overlap += 3
+        elif image_similarity > 0.7:
+            total_overlap += 2
 
         # Boost if names are similar
         profile_name = profile.get("name", "")
@@ -102,11 +115,13 @@ def calculate_unigram_scores(persona_query: str, profiles: List[Dict], persona_n
             "trigram_overlap": tri_overlap,
             "total_overlap": total_overlap + boost,
             "name_similarity": name_similarity,
-            "sequence_matcher_score": similarity_score
+            "sequence_matcher_score": similarity_score,
+            "image_similarity": image_similarity
         })
 
     # Sort by total_overlap (desc), then name_similarity (desc), then sequence_matcher_score (desc)
     scores = sorted(scores, key=lambda x: (
+        -x["image_similarity"],
         -x["total_overlap"],
         -x["name_similarity"],
         -x["sequence_matcher_score"]
@@ -133,16 +148,19 @@ def process_all_personas():
     for persona in personas:
         persona_query = extract_query_from_persona(persona)
         persona_name = persona.get("name", "")
-        relevant_profiles = [p for p in all_profiles if p.get("original_name") == persona_name]
-        if not relevant_profiles:
-            continue
+        # print(persona_name)
+        relevant_profiles = [p for p in all_profiles]
+        # if not relevant_profiles:
+        #     continue
 
         ranked_profiles = calculate_unigram_scores(persona_query, relevant_profiles, persona_name)
+        print(ranked_profiles)
         final_results.append({
             "persona": persona_name,
             "persona_query": persona_query,
             "ranked_profiles": ranked_profiles
         })
+        
 
     with open('temp/final_rankings.json', 'w') as f:
         json.dump(final_results, f, indent=2)
@@ -152,4 +170,4 @@ def process_all_personas():
 # Run it
 if __name__ == "__main__":
     results = process_all_personas()
-    print("✅ Processing complete. Results saved to final_rankings3.json")
+    print("✅ Processing complete. Results saved to temp/final_rankings.json")

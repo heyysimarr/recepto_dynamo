@@ -1,12 +1,12 @@
 [
     {
-        "name": "DamionW",
-        "image": "https://drive.google.com/file/d/1EGZ9-pwlPSg3VctQ9zeDCYw0oA3xYGR7/view?usp=drive_link",
-        "intro": "Principal Security Engineer",
-        "timezone": "America/New_York",
+        "name": "Jeff Ignacio",
+        "image": "https://drive.google.com/file/d/1sY4FWAmHdeOj8WmG7mvO13-7JRIfQ-t2/view?usp=drive_link",
+        "intro": "Head of RevOps at Keystone AI",
+        "timezone": "America/Los_Angeles",
         "company_industry": null,
         "company_size": null,
         "social_profile": [],
-        "human": 0
+        "human": 1
     }
 ]

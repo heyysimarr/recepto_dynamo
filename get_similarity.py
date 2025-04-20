@@ -29,16 +29,43 @@ def download_and_load_models():
     embedder = cv2.dnn.readNetFromTorch("nn4.small2.v1.t7")
     return detector, embedder
 
+# def drive_to_direct(url: str) -> str:
+#     m = re.search(r'/d/([^/]+)', url)
+#     return f"https://drive.google.com/uc?export=view&id={m.group(1)}" if m else url
+
+# def url_to_image(url: str) -> np.ndarray:
+#     resp = requests.get(url, timeout=10)
+#     arr = np.frombuffer(resp.content, np.uint8)
+#     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+#     if img is None:
+#         raise ValueError(f"Unable to load image from {url}")
+#     return img
+
 def drive_to_direct(url: str) -> str:
+    """Convert Google Drive shareable link to direct download/view link."""
     m = re.search(r'/d/([^/]+)', url)
-    return f"https://drive.google.com/uc?export=view&id={m.group(1)}" if m else url
+    if m:
+        file_id = m.group(1)
+        return f"https://drive.google.com/uc?export=view&id={file_id}"
+    else:
+        return url  # Return as-is if not a Drive link
 
 def url_to_image(url: str) -> np.ndarray:
-    resp = requests.get(url, timeout=10)
+    """Download an image from a URL and convert it to a NumPy array."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+    resp = requests.get(url, headers=headers, timeout=10)
+    
+    if resp.status_code != 200:
+        raise ValueError(f"Request to {url} failed with status code {resp.status_code}")
+
     arr = np.frombuffer(resp.content, np.uint8)
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
     if img is None:
-        raise ValueError(f"Unable to load image from {url}")
+        raise ValueError(f"Unable to decode image from {url}")
+    
     return img
 
 def get_embedding(image: np.ndarray, detector, embedder) -> np.ndarray:
@@ -49,7 +76,7 @@ def get_embedding(image: np.ndarray, detector, embedder) -> np.ndarray:
     if detections.shape[2] == 0:
         raise ValueError("No faces detected")
     i = np.argmax(detections[0, 0, :, 2])
-    if detections[0, 0, i, 2] < 0.5:
+    if detections[0, 0, i, 2] < 0.2:
         raise ValueError("No high-confidence face detected")
     box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
     x1, y1, x2, y2 = box.astype(int)

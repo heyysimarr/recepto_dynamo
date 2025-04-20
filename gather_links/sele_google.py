@@ -16,6 +16,8 @@ import requests
 import ollama
 from dotenv import load_dotenv
 
+load_dotenv()
+
 
 def random_sleep(min_seconds, max_seconds):
     time.sleep(random.uniform(min_seconds, max_seconds))
@@ -23,6 +25,7 @@ def random_sleep(min_seconds, max_seconds):
 
 # Access AZURE_ENDPOINT and AZURE_API_KEY
 AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
+print(AZURE_ENDPOINT)
 AZURE_API_KEY = os.getenv("AZURE_API_KEY")
 
 
